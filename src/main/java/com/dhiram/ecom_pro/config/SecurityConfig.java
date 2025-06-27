@@ -4,14 +4,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.dhiram.ecom_pro.security.JwtAuthFilter;
 
 import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
+@EnableWebSecurity
+@EnableWebMvc
 public class SecurityConfig {
 
     @Autowired
@@ -32,6 +36,7 @@ public class SecurityConfig {
                                 "/v3/api-docs.yaml", // Add this for YAML format
                                 "/api-docs/**") // Add this for broader coverage
                         .permitAll()
+                        .requestMatchers("/api").permitAll()
                         .requestMatchers("/api/users/login", "/api/users/register", "/api/admin/login",
                                 "/api/public/**")
                         .permitAll()
