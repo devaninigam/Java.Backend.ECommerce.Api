@@ -35,8 +35,7 @@ public class BuyerUserProductController {
             return buyerUserProductService.getAllProducts();
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of(
-                    "message", "Error fetching products: " + e.getMessage()
-            ));
+                    "message", "Error fetching products: " + e.getMessage()));
         }
     }
 
@@ -46,8 +45,7 @@ public class BuyerUserProductController {
             return buyerUserProductService.postAddCarts(postAddCartsRequest);
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of(
-                    "message", "Error adding products to cart: " + e.getMessage()
-            ));
+                    "message", "Error adding products to cart: " + e.getMessage()));
         }
     }
 
@@ -57,8 +55,7 @@ public class BuyerUserProductController {
             return buyerUserProductService.putUpdateCarts(postAddCartsRequest);
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of(
-                    "message", "Error adding products to cart: " + e.getMessage()
-            ));
+                    "message", "Error adding products to cart: " + e.getMessage()));
         }
     }
 
@@ -68,8 +65,7 @@ public class BuyerUserProductController {
             return buyerUserProductService.deleteCarts(deleteCartsRequest);
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of(
-                    "message", "Error deleting products to cart: " + e.getMessage()
-            ));
+                    "message", "Error deleting products to cart: " + e.getMessage()));
         }
     }
 
@@ -79,8 +75,7 @@ public class BuyerUserProductController {
             if (buyerId == null || buyerId.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "message", "User id is required",
-                        "status", "error"
-                ));
+                        "status", "error"));
             }
             UUID uuid;
             try {
@@ -88,15 +83,12 @@ public class BuyerUserProductController {
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "message", "Invalid user ID format",
-                        "status", "error"
-                ));
+                        "status", "error"));
             }
             return buyerUserProductService.getAllCarts(uuid);
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of(
-                    "message", "Error fetching carts: " + e.getMessage()
-            ));
+                    "message", "Error fetching carts: " + e.getMessage()));
         }
     }
-
 }

@@ -6,12 +6,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class PasswordBCrypt {
 
-    public String hashPassword(String password) {
+    public static String hashPassword(String password) {
         String newPassword = BCrypt.hashpw(password, BCrypt.gensalt());
         return newPassword;
     }
 
-    public boolean matchesPassword(String planPassword, String password) {
+    public static boolean matchesPassword(String planPassword, String password) {
         boolean newPassword = BCrypt.checkpw(planPassword, password);
         return newPassword;
     }
