@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class PasswordBCrypt {
 
-    public String hashPassword(String password) {
+    public static String hashPassword(String password) {
         String newPassword = BCrypt.hashpw(password, BCrypt.gensalt());
         return newPassword;
     }
