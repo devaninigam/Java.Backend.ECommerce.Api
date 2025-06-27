@@ -11,7 +11,7 @@ public class PasswordBCrypt {
         return newPassword;
     }
 
-    public boolean matchesPassword(String planPassword, String password) {
+    public static boolean matchesPassword(String planPassword, String password) {
         boolean newPassword = BCrypt.checkpw(planPassword, password);
         return newPassword;
     }

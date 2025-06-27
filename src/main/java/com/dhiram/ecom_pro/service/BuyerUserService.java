@@ -162,7 +162,7 @@ public class BuyerUserService {
                                                         "errorDetails",
                                                         "Please verify your account before logging in"));
                 }
-                if (!buyerUser.getPassword().equals(loginRequest.getPassword())) {
+                if (!PasswordBCrypt.matchesPassword(loginRequest.getPassword(), buyerUser.getPassword())) {
                         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                                         .body(Map.of(
                                                         "message", "Invalid credentials",
