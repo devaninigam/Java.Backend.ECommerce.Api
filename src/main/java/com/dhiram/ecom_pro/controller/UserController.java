@@ -27,8 +27,7 @@ public class UserController {
 
     @Autowired
     private UserRepo userRepo;
-    @Autowired
-    private PasswordBCrypt passwordBCrypt;
+
     @Autowired
     private JwtUtil jwtUtil;
 
@@ -44,7 +43,7 @@ public class UserController {
 
     @PostMapping("/register")
     public User createUser(@RequestBody User user) {
-        user.setPassword(passwordBCrypt.hashPassword(user.getPassword()));
+        user.setPassword(PasswordBCrypt.hashPassword(user.getPassword()));
         return userRepo.save(user);
     }
 
@@ -66,7 +65,7 @@ public class UserController {
             return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
         }
 
-        if (!passwordBCrypt.matchesPassword(password, foundUser.get().getPassword())) {
+        if (!PasswordBCrypt.matchesPassword(password, foundUser.get().getPassword())) {
             return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED);
         }
         List<String> roles = List.of("ROLE_USER");
