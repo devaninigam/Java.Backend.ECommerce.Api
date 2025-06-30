@@ -22,27 +22,30 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/users/login", "/api/users/register", "/api/admin/login", "/api/public/**").permitAll()
-                .requestMatchers("/api/buyer-user/varify-login-otp", "/api/buyer-user/login", "/api/buyer-user/registration", "/api/buyer-user/resend-login-otp").permitAll()
-                // for Testing Path
-                // .requestMatchers("/api/buyer-user/add-carts").permitAll()
-                .requestMatchers("/api/admin/**", "/api/users").hasRole("ADMIN")
-                .requestMatchers("/api/products/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
-                .requestMatchers("/api/buyer-user/**").hasAnyRole("BUYER")
-                .anyRequest().authenticated()
-                )
+                        .requestMatchers("/api").permitAll()
+                        .requestMatchers("/api/users/login", "/api/users/register", "/api/admin/login",
+                                "/api/public/**")
+                        .permitAll()
+                        .requestMatchers("/api/buyer-user/varify-login-otp", "/api/buyer-user/login",
+                                "/api/buyer-user/registration", "/api/buyer-user/resend-login-otp")
+                        .permitAll()
+                        // for Testing Path
+                        // .requestMatchers("/api/buyer-user/add-carts").permitAll()
+                        .requestMatchers("/api/admin/**", "/api/users").hasRole("ADMIN")
+                        .requestMatchers("/api/products/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+                        .requestMatchers("/api/buyer-user/**").hasAnyRole("BUYER")
+                        .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
-                .authenticationEntryPoint((req, res, authException) -> {
-                    res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    res.setContentType("application/json");
-                    res.getWriter().write("{\"message\": \"Unauthorized\", \"status\": 401}");
-                })
-                .accessDeniedHandler((req, res, accessDeniedException) -> {
-                    res.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                    res.setContentType("application/json");
-                    res.getWriter().write("{\"message\": \"Access Denied\", \"status\": 403}");
-                })
-                )
+                        .authenticationEntryPoint((req, res, authException) -> {
+                            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            res.setContentType("application/json");
+                            res.getWriter().write("{\"message\": \"Unauthorized\", \"status\": 401}");
+                        })
+                        .accessDeniedHandler((req, res, accessDeniedException) -> {
+                            res.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            res.setContentType("application/json");
+                            res.getWriter().write("{\"message\": \"Access Denied\", \"status\": 403}");
+                        }))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
