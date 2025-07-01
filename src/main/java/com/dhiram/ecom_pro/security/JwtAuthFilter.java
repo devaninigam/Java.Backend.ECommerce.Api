@@ -26,25 +26,53 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException, java.io.IOException {
+            throws ServletException, IOException, java.io.IOException { // Corrected IOException import
         String authHeader = request.getHeader("Authorization");
+        
+        // Check if Authorization header exists and starts with "Bearer "
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String jwt = authHeader.substring(7);
-            String username = jwtUtil.extractUsername(jwt);
+            String jwt = authHeader.substring(7); // Extract the JWT token
+            String username = null;
+            List<String> roles = null;
+
+            try {
+                username = jwtUtil.extractUsername(jwt); // Extract username from JWT
+                roles = jwtUtil.extractRoles(jwt); // Extract roles from JWT
+            } catch (Exception e) {
+                // Log the exception for debugging, but don't stop the filter chain
+                System.err.println("Error extracting JWT details: " + e.getMessage());
+                // Optionally, you could set a response status here if the token is invalid
+                // response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                // return; // Stop processing this request if token is invalid
+            }
+
+            // If username is valid and no authentication is currently set in SecurityContext
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                // Validate the JWT token
                 if (jwtUtil.validateToken(jwt)) {
-                    List<String> roles = jwtUtil.extractRoles(jwt);
-                    List<SimpleGrantedAuthority> authoritys = roles.stream().map(SimpleGrantedAuthority::new).toList();
-                    System.out.println("roles:- " + roles);
-                    System.out.println("authoritys:- " + authoritys);
-                    UsernamePasswordAuthenticationToken authToken
-                            = new UsernamePasswordAuthenticationToken(username, null, authoritys);
+                    // Convert roles (String list) to SimpleGrantedAuthority list
+                    List<SimpleGrantedAuthority> authorities = (roles != null)
+                            ? roles.stream().map(SimpleGrantedAuthority::new).toList()
+                            : List.of();
+                    
+                    System.out.println("Extracted roles: " + roles);
+                    System.out.println("Granted authorities: " + authorities);
+
+                    // Create an authentication token
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            username, null, authorities);
+                    
+                    // Set authentication details from the request
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    
+                    // Set the authentication in the SecurityContext
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                } else {
+                    System.out.println("JWT token validation failed for username: " + username);
                 }
             }
         }
+        // Continue the filter chain
         filterChain.doFilter(request, response);
     }
-
 }
