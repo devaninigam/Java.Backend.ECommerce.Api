@@ -28,8 +28,6 @@ public class AdminController {
     @Autowired
     private UserRepo userRepo;
     @Autowired
-    private PasswordBCrypt passwordBCrypt;
-    @Autowired
     private JwtUtil jwtUtil;
 
     @GetMapping("/hello")
@@ -50,7 +48,7 @@ public class AdminController {
             return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
         }
 
-        if (!passwordBCrypt.matchesPassword(password, foundUser.get().getPassword())) {
+        if (!PasswordBCrypt.matchesPassword(password, foundUser.get().getPassword())) {
             return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED);
         }
 
