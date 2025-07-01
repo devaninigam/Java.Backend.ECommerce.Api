@@ -7,7 +7,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.dhiram.ecom_pro.security.JwtAuthFilter;
 
@@ -15,7 +14,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
-@EnableWebMvc
 public class SecurityConfig {
 
     @Autowired
@@ -28,13 +26,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/swagger-ui/**",
+                                "/swagger-ui.html", // Often not explicitly needed if /swagger-ui/** covers it
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
-                                "/swagger-ui.html",
                                 "/webjars/**",
-                                "/v3/api-docs", // Add this explicitly
-                                "/v3/api-docs.yaml", // Add this for YAML format
-                                "/api-docs/**") // Add this for broader coverage
+                                "/api-docs/**",
+                                "/v3/api-docs.yaml")
                         .permitAll()
                         .requestMatchers("/api").permitAll()
                         .requestMatchers("/api/users/login", "/api/users/register", "/api/admin/login",
