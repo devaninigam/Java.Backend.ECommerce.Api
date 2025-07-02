@@ -15,38 +15,32 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtil {
 
-    // IMPORTANT: In a production environment, this key should be securely loaded
-    // from environment variables or a secret management service, not hardcoded.
-    // It should be at least 256 bits (32 characters for HS256)
-    private final String SECRET_KEY = "YourSecretKeyMustBeLongEnoughToBeSecureNigam123!AndEvenLongerForProductionUse"; // Increased length for better security
+    private final String SECRET_KEY = "YourSecretKeyMustBeLongEnoughToBeSecureNigam123!AndEvenLongerForProductionUse";
+    private final long DEFAULT_EXPIRATION_TIME = 1000000000000L; // 1 day
 
     // Expiration time for the JWT token (e.g., 1 day in milliseconds)
     // 1000L * 60 * 60 * 24 = 86,400,000 milliseconds (1 day)
-    private final long EXPIRATION_TIME = 86400000L; 
+    // private final long EXPIRATION_TIME = 86400000L;
 
     // Generates a secure key from the SECRET_KEY string
     private Key getKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
-    /**
-     * Generates a JWT token for a given email and list of roles.
-     * @param email The subject of the token (e.g., user's email).
-     * @param roles A list of roles (e.g., "ROLE_ADMIN", "ROLE_BUYER").
-     * @return The generated JWT token string.
-     */
-    public String generateToken(String email, List<String> roles) {
+    public String generateToken(String email, List<String> roles, long expirationTime) {
+        long actualExpiration = expirationTime > 0 ? expirationTime : DEFAULT_EXPIRATION_TIME;
         return Jwts.builder()
-                .setSubject(email) // Sets the subject of the token
-                .claim("roles", roles) // Adds custom claim for roles
-                .setIssuedAt(new Date()) // Sets the token issuance date
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME)) // Sets the token expiration date
-                .signWith(getKey(), SignatureAlgorithm.HS256) // Signs the token with the secret key and algorithm
-                .compact(); // Builds and compacts the JWT into a string
+                .setSubject(email)
+                .claim("roles", roles)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + actualExpiration))
+                .signWith(getKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
 
     /**
      * Extracts the username (subject) from a JWT token.
+     * 
      * @param token The JWT token string.
      * @return The username extracted from the token.
      */
@@ -61,6 +55,7 @@ public class JwtUtil {
 
     /**
      * Extracts the roles from a JWT token.
+     * 
      * @param token The JWT token string.
      * @return A list of roles extracted from the token.
      */
@@ -76,6 +71,7 @@ public class JwtUtil {
 
     /**
      * Validates a JWT token.
+     * 
      * @param token The JWT token string.
      * @return true if the token is valid, false otherwise.
      */
@@ -92,9 +88,10 @@ public class JwtUtil {
 
     /**
      * Returns the configured expiration time for JWT tokens.
+     * 
      * @return The expiration time in milliseconds.
      */
     public long getEXPIRATION_TIME() {
-        return EXPIRATION_TIME;
+        return DEFAULT_EXPIRATION_TIME;
     }
 }

@@ -19,28 +19,31 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthFilter jwtAuthFilter;
 
+    // Constant for permitAll paths
+    private static final String[] PERMIT_ALL_PATHS = {
+            // USER ALL PATH
+            "/api/users/login",
+            "/api/users/register",
+            // ADMIN ALL PATH
+            "/api/admin/login",
+            // PUBLIC ALL PATH
+            "/api/public/**",
+            // BUYER-USER ALL PATH
+            "/api/buyer-user/varify-login-otp",
+            "/api/buyer-user/login",
+            "/api/buyer-user/registration",
+            "/api/buyer-user/resend-login-otp",
+            "/api/buyer-user/forgot-password",
+            "/api/buyer-user/reset-password"
+    };
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/swagger-ui/**",
-                                "/swagger-ui.html", // Often not explicitly needed if /swagger-ui/** covers it
-                                "/v3/api-docs/**",
-                                "/swagger-resources/**",
-                                "/webjars/**",
-                                "/api-docs/**",
-                                "/v3/api-docs.yaml")
-                        .permitAll()
-                        .requestMatchers("/api").permitAll()
-                        .requestMatchers("/api/users/login", "/api/users/register", "/api/admin/login",
-                                "/api/public/**")
-                        .permitAll()
-                        .requestMatchers("/api/buyer-user/varify-login-otp", "/api/buyer-user/login",
-                                "/api/buyer-user/registration", "/api/buyer-user/resend-login-otp")
-                        .permitAll()
-                        // for Testing Path
+                        .requestMatchers(PERMIT_ALL_PATHS).permitAll()
+                        // for Testing Path (uncomment if needed)
                         // .requestMatchers("/api/buyer-user/add-carts").permitAll()
                         .requestMatchers("/api/admin/**", "/api/users").hasRole("ADMIN")
                         .requestMatchers("/api/products/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
