@@ -269,7 +269,8 @@ public class BuyerUserService {
                             "status", "error",
                             "message", "Password and confirmation password do not match"));
         }
-        buyerUser.setPassword(password);
+
+        buyerUser.setPassword(PasswordBCrypt.hashPassword(password));
         buyerUser.setForgotPassword(false);
         buyerRepo.save(buyerUser);
 
