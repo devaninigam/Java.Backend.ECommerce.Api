@@ -27,6 +27,7 @@ public class AdminController {
 
     @Autowired
     private UserRepo userRepo;
+
     @Autowired
     private JwtUtil jwtUtil;
 
