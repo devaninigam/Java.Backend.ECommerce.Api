@@ -15,18 +15,19 @@ import io.jsonwebtoken.security.Keys;
 public class JwtUtil {
 
     private final String SECRET_KEY = "YourSecretKeyMustBeLongEnoughToBeSecureNigam123!";
-    private final long EXPIRATION_TIME = 1000000000000L; // 1 day
+    private final long DEFAULT_EXPIRATION_TIME = 1000000000000L; // 1 day
 
     private Key getKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
-    public String generateToken(String email, List<String> roles) {
+    public String generateToken(String email, List<String> roles, long expirationTime) {
+        long actualExpiration = expirationTime > 0 ? expirationTime : DEFAULT_EXPIRATION_TIME;
         return Jwts.builder()
                 .setSubject(email)
                 .claim("roles", roles)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .setExpiration(new Date(System.currentTimeMillis() + actualExpiration))
                 .signWith(getKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -60,6 +61,6 @@ public class JwtUtil {
     }
 
     public long getEXPIRATION_TIME() {
-        return EXPIRATION_TIME;
+        return DEFAULT_EXPIRATION_TIME;
     }
 }

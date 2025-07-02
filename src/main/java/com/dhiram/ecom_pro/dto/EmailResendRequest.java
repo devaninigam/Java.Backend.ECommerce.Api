@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class OtpResendRequest {
+public class EmailResendRequest {
 
     @NotBlank(message = "Email cannot be blank")
     @Email(message = "Email should be valid")

@@ -74,7 +74,7 @@ public class UserController {
         sentData.put("email", foundUser.get().getEmail());
         sentData.put("name", foundUser.get().getName());
         sentData.put("id", foundUser.get().getId());
-        sentData.put("token", jwtUtil.generateToken(email, roles));
+        sentData.put("token", jwtUtil.generateToken(email, roles, 0));
 
         return new ResponseEntity<>(sentData, HttpStatus.OK);
     }
