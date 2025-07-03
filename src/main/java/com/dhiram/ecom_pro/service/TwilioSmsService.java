@@ -2,19 +2,17 @@ package com.dhiram.ecom_pro.service;
 
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
-
-import io.github.cdimascio.dotenv.Dotenv;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class TwilioSmsService {
-    Dotenv dotenv = Dotenv.load();
-    
-    private final String authToken = dotenv.get("TWILIO_AUTH_TOKEN");
 
-    private final String accountSid= dotenv.get("TWILIO_ACCOUNT_SID");
+    @Value("${twilio.account.sid}")
+    private String accountSid;
+
+    @Value("${twilio.auth.token}")
+    private String authToken;
 
     @Value("${twilio.phone.number}")
     private String fromNumber;

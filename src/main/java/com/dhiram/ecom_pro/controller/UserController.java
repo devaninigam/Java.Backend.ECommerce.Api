@@ -55,9 +55,6 @@ public class UserController {
     @PostMapping("/register")
     public User createUser(@Valid @RequestBody User user) {
         user.setPassword(PasswordBCrypt.hashPassword(user.getPassword()));
-        System.out.println("-------------------------------------------");
-        System.out.println(user);
-        System.out.println("-------------------------------------------");
         return userRepo.save(user);
     }
 
