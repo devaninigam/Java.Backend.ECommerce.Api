@@ -3,8 +3,10 @@ package com.dhiram.ecom_pro.service;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.dhiram.ecom_pro.dto.EmailResendRequest;
 import com.dhiram.ecom_pro.model.User;
 import com.dhiram.ecom_pro.repo.UserRepo;
 
@@ -16,6 +18,11 @@ public class UserService {
 
     public User getUserById(UUID id) {
         return userRepo.findById(id).orElse(null);
+    }
+
+    public ResponseEntity<?> userForgotPassword(EmailResendRequest emailResponse) {
+        
+        return null;
     }
 
 }

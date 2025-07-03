@@ -1,7 +1,11 @@
 package com.dhiram.ecom_pro.security;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,7 +16,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.dhiram.ecom_pro.utils.JwtUtil;
 
-import io.jsonwebtoken.io.IOException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,58 +24,75 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
+    private static final String AUTH_HEADER = "Authorization";
+    private static final String BEARER_PREFIX = "Bearer ";
+
     @Autowired
     private JwtUtil jwtUtil;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException, java.io.IOException { // Corrected IOException import
-        String authHeader = request.getHeader("Authorization");
-        
-        // Check if Authorization header exists and starts with "Bearer "
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String jwt = authHeader.substring(7); // Extract the JWT token
-            String username = null;
-            List<String> roles = null;
+    protected void doFilterInternal(HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain)
+            throws ServletException, IOException {
 
-            try {
-                username = jwtUtil.extractUsername(jwt); // Extract username from JWT
-                roles = jwtUtil.extractRoles(jwt); // Extract roles from JWT
-            } catch (Exception e) {
-                // Log the exception for debugging, but don't stop the filter chain
-                System.err.println("Error extracting JWT details: " + e.getMessage());
-                // Optionally, you could set a response status here if the token is invalid
-                // response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                // return; // Stop processing this request if token is invalid
-            }
+        try {
+            String authHeader = request.getHeader(AUTH_HEADER);
 
-            // If username is valid and no authentication is currently set in SecurityContext
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                // Validate the JWT token
+            if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
+                String jwt = authHeader.substring(BEARER_PREFIX.length());
+
                 if (jwtUtil.validateToken(jwt)) {
-                    // Convert roles (String list) to SimpleGrantedAuthority list
-                    List<SimpleGrantedAuthority> authorities = (roles != null)
-                            ? roles.stream().map(SimpleGrantedAuthority::new).toList()
-                            : List.of();
-                    
-                    System.out.println("Extracted roles: " + roles);
-                    System.out.println("Granted authorities: " + authorities);
-
-                    // Create an authentication token
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            username, null, authorities);
-                    
-                    // Set authentication details from the request
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    
-                    // Set the authentication in the SecurityContext
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    authenticateUser(request, jwt);
                 } else {
-                    System.out.println("JWT token validation failed for username: " + username);
+                    logger.warn("Invalid JWT token received");
                 }
             }
+
+            filterChain.doFilter(request, response);
+
+        } catch (Exception ex) {
+            logger.error("Security exception occurred: {}", ex.getMessage());
+            SecurityContextHolder.clearContext();
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication failed");
         }
-        // Continue the filter chain
-        filterChain.doFilter(request, response);
+    }
+
+    private void authenticateUser(HttpServletRequest request, String jwt) {
+        try {
+            String username = jwtUtil.extractUsername(jwt);
+            List<String> roles = jwtUtil.extractRoles(jwt);
+
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                List<SimpleGrantedAuthority> authorities = roles.stream()
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList());
+
+                logger.debug("Authenticating user: {} with roles: {}", username, roles);
+
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        username,
+                        null,
+                        authorities);
+
+                authToken.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request));
+
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
+        } catch (Exception ex) {
+            logger.error("Failed to authenticate user from JWT: {}", ex.getMessage());
+            throw ex;
+        }
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        // Skip JWT filter for permitted paths
+        String path = request.getServletPath();
+        return path.startsWith("/api/auth") ||
+                path.startsWith("/swagger-ui") ||
+                path.startsWith("/v3/api-docs");
     }
 }
