@@ -8,11 +8,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.dhiram.ecom_pro.dto.ResetPasswordRequest;
 import com.dhiram.ecom_pro.dto.UserRendPasswordRequest;
-import com.dhiram.ecom_pro.exception.GlobalExceptionHandler;
+import com.dhiram.ecom_pro.exception.GlobalExceptionHandler.ErrorResponse;
 import com.dhiram.ecom_pro.model.User;
 import com.dhiram.ecom_pro.repo.UserRepo;
 import com.dhiram.ecom_pro.utils.OtpUtil;
+import static com.dhiram.ecom_pro.utils.PasswordBCrypt.hashPassword;
 
 @Service
 public class UserService {
@@ -33,20 +35,12 @@ public class UserService {
 
         if (userData == null) {
             return ResponseEntity.status(404)
-                    .body(new GlobalExceptionHandler.ErrorResponse("404", "User not found"));
+                    .body(new ErrorResponse("404", "User not found"));
         }
-
-        // if (!userData.getForgotPasswordStatus()) {
-        // int statusCode = HttpStatus.FORBIDDEN.value();
-        // return ResponseEntity.status(statusCode)
-        // .body(new GlobalExceptionHandler.ErrorResponse("Password reset not allowed at
-        // this time",
-        // String.valueOf(statusCode)));
-        // }
 
         if (!userData.getPhoneNo().equals(emailResponse.getPhoneNo())) {
             return ResponseEntity.status(404)
-                    .body(new GlobalExceptionHandler.ErrorResponse(
+                    .body(new ErrorResponse(
                             "404", "Phone number doesn't match registered number"));
         }
 
@@ -55,7 +49,7 @@ public class UserService {
                 // HTTP TOO_MANY_REQUESTS = 429
                 return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
                         .header("Retry-After", "3600")
-                        .body(new GlobalExceptionHandler.ErrorResponse(
+                        .body(new ErrorResponse(
                                 "429",
                                 "You've exceeded the maximum OTP attempts. Please try again after 1 hour."));
             } else {
@@ -73,6 +67,50 @@ public class UserService {
         return ResponseEntity.ok().body(Map.of(
                 "status", "success",
                 "message", "Password reset link sent successfully on:- " + userData.getPhoneNo()));
+    }
+
+    public ResponseEntity<?> useResetPassword(ResetPasswordRequest resetPasswordResponse) {
+
+        User userData = userRepo.findByEmail(resetPasswordResponse.getEmail()).orElse(null);
+
+        if (userData == null) {
+            return ResponseEntity.status(404)
+                    .body(new ErrorResponse("404", "User not found"));
+        }
+
+        if (!resetPasswordResponse.getPassword().equals(resetPasswordResponse.getConfirmPassword())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(
+                            "PASSWORD_MISMATCH",
+                            "Password and confirmation password do not match. Please ensure both fields are identical."));
+        }
+
+        if (!userData.getForgotPasswordStatus()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ErrorResponse(
+                            "RESET_DISABLED",
+                            "Password reset not allowed"));
+
+        }
+
+        if (!userData.getForgotPasswordOtp().equals(resetPasswordResponse.getOtp())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse(
+                            "INVALID_OTP",
+                            "Incorrect OTP"));
+        }
+
+        userData.setPassword(hashPassword(resetPasswordResponse.getPassword()));
+        userData.setForgotPasswordStatus(false);
+        userData.setForgotPasswordOtp(null);
+        userData.setForgotPasswordOtpCount(0);
+        userData.setForgotPasswordOtpLastResend(null);
+
+        userRepo.save(userData);
+
+        return ResponseEntity.ok().body(Map.of(
+                "status", "success",
+                "message", "Your password has been successfully updated"));
     }
 
 }

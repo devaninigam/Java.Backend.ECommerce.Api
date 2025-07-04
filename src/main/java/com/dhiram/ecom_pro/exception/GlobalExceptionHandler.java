@@ -60,8 +60,8 @@ public class GlobalExceptionHandler {
         private String message;
 
         public ErrorResponse(String status, String message) {
-            this.status = status;
             this.message = message;
+            this.status = status;
         }
     }
 }

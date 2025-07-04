@@ -22,6 +22,7 @@ public class SecurityConfig {
             "/api/users/login",
             "/api/users/register",
             "/api/users/forgot-password",
+            "/api/users/reset-password",
             // ADMIN ALL PATH
             "/api/admin/login",
             // PUBLIC ALL PATH

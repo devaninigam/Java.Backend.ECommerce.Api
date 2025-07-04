@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.dhiram.ecom_pro.dto.ResetPasswordRequest;
 import com.dhiram.ecom_pro.dto.UserRendPasswordRequest;
 import com.dhiram.ecom_pro.model.User;
 import com.dhiram.ecom_pro.repo.UserRepo;
@@ -105,18 +106,8 @@ public class UserController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> useResetPassword(@Valid @RequestBody UserRendPasswordRequest emailResponse) {
-        try {
-            ResponseEntity<?> buyerUser = userService.userForgotPassword(emailResponse);
-            return buyerUser;
-            // return buyerUser;
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of(
-                            "status", "error",
-                            "message", "Failed to process password reset request",
-                            "error", e.getMessage(),
-                            "timestamp", LocalDateTime.now()));
-        }
+    public ResponseEntity<?> useResetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordResponse) {
+        ResponseEntity<?> buyerUser = userService.useResetPassword(resetPasswordResponse);
+        return buyerUser;
     }
 }
