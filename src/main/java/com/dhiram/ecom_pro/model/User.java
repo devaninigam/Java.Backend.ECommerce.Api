@@ -59,7 +59,7 @@ public class User {
     private Boolean forgotPasswordStatus = false;
 
     @Column(nullable = true)
-    private Boolean forgotPasswordOtp;
+    private String forgotPasswordOtp;
 
     @Column(nullable = true)
     private int forgotPasswordOtpCount = 0;

@@ -1,16 +1,15 @@
 package com.dhiram.ecom_pro.exception;
 
+import java.util.stream.Collectors;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.dao.DataIntegrityViolationException;
 
 import jakarta.validation.ConstraintViolationException;
-
-import java.util.stream.Collectors;
-
 import lombok.Data;
 
 @ControllerAdvice
@@ -23,7 +22,7 @@ public class GlobalExceptionHandler {
                 .stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.joining(", "));
-        
+
         return new ResponseEntity<>(
                 new ErrorResponse("Validation failed", errorMessage),
                 HttpStatus.BAD_REQUEST);
@@ -35,7 +34,7 @@ public class GlobalExceptionHandler {
                 .stream()
                 .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
                 .collect(Collectors.joining(", "));
-        
+
         return new ResponseEntity<>(
                 new ErrorResponse("Constraint violation", errorMessage),
                 HttpStatus.BAD_REQUEST);
