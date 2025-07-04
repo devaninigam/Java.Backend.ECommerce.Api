@@ -44,17 +44,15 @@ public class UserService {
                             "404", "Phone number doesn't match registered number"));
         }
 
-        if (userData.getForgotPasswordOtpCount() >= 3) {
-            if (!OtpUtil.isOtpResendBlocked(userData.getForgotPasswordOtpLastResend())) {
-                // HTTP TOO_MANY_REQUESTS = 429
-                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                        .header("Retry-After", "3600")
-                        .body(new ErrorResponse(
-                                "429",
-                                "You've exceeded the maximum OTP attempts. Please try again after 1 hour."));
-            } else {
-                userData.setForgotPasswordOtpCount(0);
-            }
+        if (OtpUtil.isOtpResendBlocked(userData.getForgotPasswordOtpLastResend())) {
+            userData.setForgotPasswordOtpCount(0);
+            userRepo.save(userData);
+        } else if (userData.getForgotPasswordOtpCount() >= 3) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .header("Retry-After", "3600")
+                    .body(new ErrorResponse(
+                            "OTP_ATTEMPTS_EXCEEDED",
+                            "You've exceeded maximum OTP attempts. Please try again after 1 hour."));
         }
 
         userData.setForgotPasswordStatus(true);
