@@ -12,8 +12,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.dhiram.ecom_pro.dto.EmailResendRequest;
 import com.dhiram.ecom_pro.dto.LoginRequest;
-import com.dhiram.ecom_pro.dto.OtpResendRequest;
+import com.dhiram.ecom_pro.dto.RESETPassword;
 import com.dhiram.ecom_pro.model.BuyerUser;
 import com.dhiram.ecom_pro.model.OtpVerificationRequest;
 import com.dhiram.ecom_pro.response.ErrorResponse;
@@ -39,22 +40,21 @@ public class BuyerUserController {
                                 "User with this email already exists",
                                 "error",
                                 LocalDateTime.now(),
-                                "USER_ALREADY_EXISTS"
-                        ));
+                                "USER_ALREADY_EXISTS"));
             }
             return ResponseEntity.status(HttpStatus.OK)
                     .body(Map.of(
-                            "message", "OTP has been sent successfully. Please check your email " + buyerUserSaveNewData.getEmail() + " to verify your account.",
+                            "message",
+                            "OTP has been sent successfully. Please check your email " + buyerUserSaveNewData.getEmail()
+                                    + " to verify your account.",
                             "status", "success",
-                            "timestamp", LocalDateTime.now()
-                    ));
+                            "timestamp", LocalDateTime.now()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of(
                             "message", "Registration failed: " + e.getMessage(),
                             "status", "error",
-                            "timestamp", LocalDateTime.now()
-                    ));
+                            "timestamp", LocalDateTime.now()));
         }
     }
 
@@ -68,13 +68,12 @@ public class BuyerUserController {
                     .body(Map.of(
                             "message", "OTP verification failed: " + e.getMessage(),
                             "status", "error",
-                            "timestamp", LocalDateTime.now()
-                    ));
+                            "timestamp", LocalDateTime.now()));
         }
     }
 
     @PostMapping("/resend-login-otp")
-    public ResponseEntity<?> resendLoginOtp(@Valid @RequestBody OtpResendRequest otpResendRequest) {
+    public ResponseEntity<?> resendLoginOtp(@Valid @RequestBody EmailResendRequest otpResendRequest) {
         try {
             ResponseEntity<?> buyerUser = buyerUserService.resendOtpService(otpResendRequest.getEmail());
             return buyerUser;
@@ -83,8 +82,7 @@ public class BuyerUserController {
                     .body(Map.of(
                             "message", "Resend OTP failed: " + e.getMessage(),
                             "status", "error",
-                            "timestamp", LocalDateTime.now()
-                    ));
+                            "timestamp", LocalDateTime.now()));
         }
     }
 
@@ -98,8 +96,38 @@ public class BuyerUserController {
                     .body(Map.of(
                             "message", "Login failed: " + e.getMessage(),
                             "status", "error",
-                            "timestamp", LocalDateTime.now()
-                    ));
+                            "timestamp", LocalDateTime.now()));
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> buyerUserForgotPassword(@Valid @RequestBody EmailResendRequest emailResponse) {
+        try {
+            ResponseEntity<?> buyerUser = buyerUserService.buyerUserForgotPassword(emailResponse);
+            return buyerUser;
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "status", "error",
+                            "message", "Failed to process password reset request",
+                            "error", e.getMessage(),
+                            "timestamp", LocalDateTime.now()));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> buyerUserResetPassword(@Valid @RequestBody RESETPassword resetPasswordResponse) {
+        try {
+            ResponseEntity<?> buyerUser = buyerUserService.buyerUserResetPassword(resetPasswordResponse);
+            return buyerUser;
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "status", "error",
+                            "message", "An unexpected error occurred while processing your request",
+                            "details", "Please try again later or contact support",
+                            "timestamp", LocalDateTime.now()));
+
         }
     }
 }
