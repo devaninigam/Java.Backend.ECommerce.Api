@@ -44,7 +44,7 @@ public class UserService {
                             "404", "Phone number doesn't match registered number"));
         }
 
-        if (OtpUtil.isOtpResendBlocked(userData.getForgotPasswordOtpLastResend())) {
+        if (userData.getForgotPasswordOtpLastResend() != null && OtpUtil.isOtpResendBlocked(userData.getForgotPasswordOtpLastResend())) {
             userData.setForgotPasswordOtpCount(0);
             userRepo.save(userData);
         } else if (userData.getForgotPasswordOtpCount() >= 3) {
