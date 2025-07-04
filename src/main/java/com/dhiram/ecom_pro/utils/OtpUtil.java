@@ -22,4 +22,15 @@ public class OtpUtil {
     public static boolean isOtpExpired(Instant expiryTime) {
         return Instant.now().isAfter(expiryTime);
     }
+
+    /**
+     * Validates if OTP can be resent based on attempt limits
+     * 
+     * @param lastResendTime Time of last OTP resend
+     * @return true if blocked from resending, false if allowed
+     */
+    public static boolean isOtpResendBlocked(Instant lastResendTime) {
+        Instant expirationTime = lastResendTime.plus(1, ChronoUnit.HOURS);
+        return Instant.now().isAfter(expirationTime);
+    }
 }
